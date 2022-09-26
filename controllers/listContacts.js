@@ -1,7 +1,7 @@
-const ContactModel = require("../models/contacts");
+const { ContactModel } = require("../models/contacts");
 
 const listContacts = async (req, res) => {
-  const contacts = await ContactModel.find({});
+  const contacts = await ContactModel.find();
   res.json(contacts);
 };
 

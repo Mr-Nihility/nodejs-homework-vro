@@ -1,9 +1,6 @@
-// const fs = require("fs/promises");
-// const path = require("path");
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
-
-// const contactsPath = path.join(__dirname, "contacts.json");
+const Joi = require("joi");
 
 const contactSchema = new Schema(
   {
@@ -24,75 +21,37 @@ const contactSchema = new Schema(
   },
   { versionKey: false }
 );
-const isConflict = ({ name, code }) =>
-  name === "MongoServerError" && code === 11000;
+const isConflict = ({ name, code }) => {
+  console.log("name", name, "code", code);
+  return name === "MongoServerError" && code === 11000;
+};
 
 contactSchema.post("save", (error, _, next) => {
   error.status = isConflict(error) ? 409 : 400;
   next();
 });
 
+contactSchema.post("find", (error, _, next) => {
+  error.status = error.code === 11002 ? 404 : 400;
+  console.log("find");
+  next();
+});
+
 const ContactModel = mongoose.model("contact", contactSchema);
 
-const getContactById = async (contactId) => {
-  try {
-    const contact = await ContactModel.findById({ _id: contactId });
+const addSchema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().required(),
+  phone: Joi.string().required(),
+  favorite: Joi.boolean(),
+});
 
-    return contact;
-  } catch (err) {
-    return null;
-  }
-};
-const removeContact = async (contactId) => {
-  try {
-    const deletedContact = ContactModel.findByIdAndRemove({ _id: contactId });
-
-    return deletedContact;
-  } catch (err) {
-    console.log("here", err);
-    return null;
-  }
-};
-
-// const addContact = async ({ name, email, phone }) => {
-//   const contacts = await listContacts();
-
-//   const ids = contacts.map((item) => +item.id);
-
-//   const newContact = {
-//     name,
-//     email,
-//     phone,
-//     id: String(Math.max(...ids) + 1),
-//   };
-
-//   contacts.push(newContact);
-
-//   await updateContacts(contacts);
-
-//   return newContact;
-// };
-
-// const updateContact = async (contactId, { name, email, phone }) => {
-//   const contacts = await listContacts();
-
-//   const index = contacts.findIndex(({ id }) => id === contactId);
-
-//   if (index === -1) {
-//     return null;
-//   }
-
-//   contacts[index] = { contactId, name, email, phone };
-
-//   await updateContacts(contacts);
-
-//   return contacts[index];
-// };
+const updfavoriteSchema = Joi.object({
+  favorite: Joi.boolean().required(),
+});
 
 module.exports = {
-  getContactById,
-  removeContact,
-  // addContact,
-  // updateContact,
+  addSchema,
   ContactModel,
+  updfavoriteSchema,
 };
