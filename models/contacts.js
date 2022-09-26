@@ -1,76 +1,98 @@
-const fs = require('fs/promises')
-const path =require("path")
+// const fs = require("fs/promises");
+// const path = require("path");
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
 
-const contactsPath= path.join(__dirname,"contacts.json")
+// const contactsPath = path.join(__dirname, "contacts.json");
 
-const updateContacts = async (contacts) => {
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-}
-const listContacts = async () => {
-  const contacts = await  fs.readFile(contactsPath,"utf8")
-  return JSON.parse(contacts)
-}
+const contactSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Set name for contact"],
+    },
+    email: {
+      type: String,
+    },
+    phone: {
+      type: String,
+    },
+    favorite: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  { versionKey: false }
+);
+const isConflict = ({ name, code }) =>
+  name === "MongoServerError" && code === 11000;
+
+contactSchema.post("save", (error, _, next) => {
+  error.status = isConflict(error) ? 409 : 400;
+  next();
+});
+
+const ContactModel = mongoose.model("contact", contactSchema);
 
 const getContactById = async (contactId) => {
-  const contacts = await listContacts();
+  try {
+    const contact = await ContactModel.findById({ _id: contactId });
 
-  const filteredContact = contacts.find(({ id }) => id === contactId);
-
-  return filteredContact || null;
-}
-
+    return contact;
+  } catch (err) {
+    return null;
+  }
+};
 const removeContact = async (contactId) => {
-  const contacts = await listContacts();
+  try {
+    const deletedContact = ContactModel.findByIdAndRemove({ _id: contactId });
 
-  const index = contacts.findIndex(({id})=>id===contactId);
-
-  if(index === -1){
-     return null
+    return deletedContact;
+  } catch (err) {
+    console.log("here", err);
+    return null;
   }
+};
 
-  const [deletedContact] = contacts.splice(index,1);
+// const addContact = async ({ name, email, phone }) => {
+//   const contacts = await listContacts();
 
-  await updateContacts(contacts);
+//   const ids = contacts.map((item) => +item.id);
 
-  return  deletedContact;
-}
+//   const newContact = {
+//     name,
+//     email,
+//     phone,
+//     id: String(Math.max(...ids) + 1),
+//   };
 
-const addContact = async ({name, email, phone} ) => {
-  const contacts = await listContacts();
+//   contacts.push(newContact);
 
-  const ids = contacts.map((item) => +item.id);
+//   await updateContacts(contacts);
 
-  const newContact ={
-   name, email, phone, id: String(Math.max(...ids) + 1)
-  }
+//   return newContact;
+// };
 
-  contacts.push(newContact);
+// const updateContact = async (contactId, { name, email, phone }) => {
+//   const contacts = await listContacts();
 
-  await updateContacts(contacts);
+//   const index = contacts.findIndex(({ id }) => id === contactId);
 
-  return newContact
-}
+//   if (index === -1) {
+//     return null;
+//   }
 
-const updateContact = async (contactId, {name, email, phone}) => {
-  const contacts = await listContacts();
+//   contacts[index] = { contactId, name, email, phone };
 
-  const index= contacts.findIndex(({id})=>id===contactId);
+//   await updateContacts(contacts);
 
-  if(index === -1){
-    return null
-  }
-
-  contacts[index] = {contactId,name, email, phone};
-
-  await updateContacts(contacts);
-
-  return  contacts[index];
-}
+//   return contacts[index];
+// };
 
 module.exports = {
-  listContacts,
   getContactById,
   removeContact,
-  addContact,
-  updateContact,
-}
+  // addContact,
+  // updateContact,
+  ContactModel,
+};
