@@ -7,7 +7,7 @@ const {
   addContact,
   updateStatusContact,
   updateContact,
-} = require("../../controllers");
+} = require("../../controllers/contacts");
 // const RequestError = require("../../helpers/RequestError");
 const ctrlWrapper = require("../../helpers/ctrlWrapper");
 const { validateBody } = require("../../helpers/validateBody");
