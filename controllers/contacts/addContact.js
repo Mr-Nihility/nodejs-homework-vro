@@ -20,18 +20,11 @@ const { ContactModel } = require("../../models/contacts");
 // };
 
 const addContact = async (req, res) => {
-  // try {
-  // const { error } = contactSchema.validate(req.body);
-  // if (error) {
-  // throw RequestError(400, "missing required name field");
-  // }
+  const { _id } = req.user;
 
-  const result = await ContactModel.create(req.body);
+  const result = await ContactModel.create({ ...req.body, owner: _id });
 
   res.status(201).json(result);
-  // } catch (error) {
-  //   next(error);
-  // }
 };
 
 module.exports = addContact;

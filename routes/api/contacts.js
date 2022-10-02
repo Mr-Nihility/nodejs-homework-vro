@@ -11,21 +11,33 @@ const {
 // const RequestError = require("../../helpers/RequestError");
 const ctrlWrapper = require("../../helpers/ctrlWrapper");
 const { validateBody } = require("../../helpers/validateBody");
+const authenticate = require("../../helpers/middlewares/authenticate");
 
 const router = express.Router();
 
-router.get("/", ctrlWrapper(listContacts));
+router.get("/", authenticate, ctrlWrapper(listContacts));
 
-router.get("/:contactId", ctrlWrapper(getContactById));
+router.get("/:contactId", authenticate, ctrlWrapper(getContactById));
 
-router.post("/", validateBody(addSchema), ctrlWrapper(addContact));
+router.post(
+  "/",
+  authenticate,
+  validateBody(addSchema),
+  ctrlWrapper(addContact)
+);
 
-router.delete("/:contactId", ctrlWrapper(removeContact));
+router.delete("/:contactId", authenticate, ctrlWrapper(removeContact));
 
-router.put("/:contactId", validateBody(addSchema), ctrlWrapper(updateContact));
+router.put(
+  "/:contactId",
+  authenticate,
+  validateBody(addSchema),
+  ctrlWrapper(updateContact)
+);
 
 router.patch(
   "/:contactId/favorite",
+  authenticate,
   validateBody(updfavoriteSchema),
   ctrlWrapper(updateStatusContact)
 );
