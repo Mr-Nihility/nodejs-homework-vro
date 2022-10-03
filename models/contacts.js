@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 const Joi = require("joi");
+const handleDBError = require("../helpers/middlewares/handleDBErrors");
 
 const contactSchema = new Schema(
   {
@@ -18,24 +19,16 @@ const contactSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    owner: {
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: "user",
+    },
   },
+
   { versionKey: false }
 );
-const isConflict = ({ name, code }) => {
-  console.log("name", name, "code", code);
-  return name === "MongoServerError" && code === 11000;
-};
 
-contactSchema.post("save", (error, _, next) => {
-  error.status = isConflict(error) ? 409 : 400;
-  next();
-});
-
-contactSchema.post("find", (error, _, next) => {
-  error.status = error.code === 11002 ? 404 : 400;
-  console.log("find");
-  next();
-});
+contactSchema.post("save", handleDBError);
 
 const ContactModel = mongoose.model("contact", contactSchema);
 
