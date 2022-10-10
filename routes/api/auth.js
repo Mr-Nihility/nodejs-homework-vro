@@ -6,15 +6,17 @@ const {
   registerSchema,
   loginSchema,
   subscriptionSchema,
+
 } = require("../../models/users");
 const authenticate = require("../../helpers/middlewares/authenticate");
-
+const upload = require("../../helpers/middlewares/upload")
 const {
   register,
   logout,
   current,
   login,
   updateSubscriptionUser,
+  uploadAvatar
 } = require("../../controllers/auth");
 
 router.post(
@@ -35,4 +37,8 @@ router.patch(
   validateBody(subscriptionSchema),
   ctrlWrapper(updateSubscriptionUser)
 );
+
+
+
+router.patch("/users/avatars",authenticate,upload.single("avatar"),ctrlWrapper(uploadAvatar))
 module.exports = router;

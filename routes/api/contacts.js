@@ -8,7 +8,7 @@ const {
   updateStatusContact,
   updateContact,
 } = require("../../controllers/contacts");
-// const RequestError = require("../../helpers/RequestError");
+
 const ctrlWrapper = require("../../helpers/ctrlWrapper");
 const { validateBody } = require("../../helpers/validateBody");
 const authenticate = require("../../helpers/middlewares/authenticate");
