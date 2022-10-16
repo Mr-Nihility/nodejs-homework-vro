@@ -11,6 +11,10 @@ const login = async (req, res) => {
 
   const result = await UserModel.findOne({ email });
 
+  if (!result.verify) {
+    throw new RequestError(401, "Email not verify");
+  }
+
   if (!result) {
     throw new RequestError(401, "Email is wrong");
   }
